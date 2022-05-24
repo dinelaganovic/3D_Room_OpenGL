@@ -19,6 +19,9 @@ double second_angle = 0, minute_angle = 0, hour_angle = 0;
 GLuint text_2d;
 GLfloat texBoard[8][8][4];
 
+GLuint texture;
+GLuint texture1;
+
 void drawLine(GLfloat x, GLfloat y, GLfloat angle) {
 	glVertex3f(x, x, -0.39f);
 	glVertex3f(y * cos(angle), y * sin(angle), -0.39f);
@@ -35,8 +38,41 @@ GLfloat T[8][3] = {
     {0.020, 0.015, -0.025}
 };
 
+//Funkcija za iscrtavanje texture
+GLuint LoadTexture(const char* filename, int width, int height){
+       GLuint texture;
+       unsigned char* data;
+       FILE* file;
+       file=fopen(filename, "rb");
+       if(file==NULL)return 0;
+       data=(unsigned char*)malloc(width * height * 3);
+       fread(data,width * height * 3,1,file);
+       fclose(file);
+       glGenTextures(1,&texture);
+       glBindTexture(GL_TEXTURE_2D,texture);
+       glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+       glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+       glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+       glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+       glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+       glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,width,height,0,GL_RGB,GL_UNSIGNED_BYTE,data);
+       free(data);
+       return texture;
+}
+
 
 void lamps() {
+GLfloat ram1[] = { 1,1,1,1 };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ram1);
+    glPushMatrix();
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0, 0, -0.29);
+    glColor3f(0, 0, 0);
+    glutSolidCylinder(0.015, 0.05, 10, 10);
+    glColor3f(0.36, 0.25, 0.2);
+    glutSolidCylinder(0.0025, -0.1, 10, 10);
+    glPopMatrix();
 
     GLfloat lam[] = { 0.6, 0.2, 0,1};
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lam);
@@ -103,6 +139,15 @@ void crtajkrevet(){
     glutSolidCube(0.1);
     glPopMatrix();
 }
+void tepih(){
+
+    glTranslatef(-0.0003, -0.1, -0.00099);
+    glRotatef(90, 1,0,0);
+    glScalef(2.5, 4.0, 0.01);
+    glRotatef(0, 1,0,0);
+    glutSolidCube(0.15);
+    glPopMatrix();
+}
 void ostalo(){
     GLfloat cam[] = { 0.90,0.45,0.18 ,1 };
     GLfloat cam1[] = { 0.00, 0.35, 0.40,1 };
@@ -141,7 +186,7 @@ void ostalo(){
     glPopMatrix();
 
     GLfloat cm[] = { 0.15,0.15,0.15 ,1 };
-    GLfloat cm1[] = { 1,1,1 ,1 };
+    //GLfloat cm1[] = { 1,1,1 ,1 };
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, cm);
 
     glPushMatrix();
@@ -166,6 +211,7 @@ void face() {
 void table() {
     plant();
     face();
+    //tepih();
     glutSwapBuffers();
 }
 
@@ -187,14 +233,12 @@ GLfloat room_normal[3][3] = {
     {0.050, 0.115, -0.400}
 };
 void room() {
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //boje zida
     GLfloat wall[3][4] = { { 0.90,0.45,0.13,1 },
                             {0.90,0.45,0.13,1},
                             {0.90,0.45,0.13,1} };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, wall[0]);
-
     glBegin(GL_QUADS);
 
     glColor3f(1.0, 0.0, 0.0);
@@ -220,23 +264,31 @@ void room() {
     glVertex3fv(room_vertices[2]);
     glVertex3fv(room_vertices[1]);
     glEnd();
-    glLineWidth(5);
-    glPushMatrix();
-    glTranslatef(0.0, 0.2, 0.0);
-    glColor3f(1.0f, 0.5f, 0.0f);
-    glBegin(GL_LINES);
-    drawLine(0.0, 0.035, -second_angle + PI / 2);
-    glEnd();
 
-    glColor3f(1, 0.5, 0);
-    glBegin(GL_LINES);
-    drawLine(0.0, 0.040, -minute_angle + PI / 2);
-    glEnd();
+    //////
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,texture);
+    glBegin(GL_POLYGON);
+        //plafon
+         glColor3f(1.0,1.0,1.0);
+         glTexCoord2d(0.0, 0.0);glVertex3f(-0.3,-0.1,-0.3);
+         glTexCoord2d(2.0, 0.0);glVertex3f(-0.3,-0.1,0.30);
+         glTexCoord2d(2.0, 2.0);glVertex3f(0.2,-0.1,0.30);
+         glTexCoord2d(0.0, 2.0);glVertex3f(0.2,-0.1,-0.3);
 
-    glBegin(GL_LINES);
-    drawLine(0.0, 0.025, -hour_angle + PI / 2);
-    glEnd();
+        glEnd();
     glPopMatrix();
+    glBindTexture(GL_TEXTURE_2D,texture1);
+    glBegin(GL_POLYGON);
+        //levi zid
+         glColor3f(1.0,1.0,1.0);
+         glTexCoord2d(0.0, 0.0);glVertex3f(-0.29,0.03,0.07);
+         glTexCoord2d(0.0, 2.0);glVertex3f(-0.29,0.2,0.07);
+         glTexCoord2d(2.0, 2.0);glVertex3f(-0.29,0.2,0.23);
+         glTexCoord2d(2.0, 0.0);glVertex3f(-0.29,0.03,0.23);
+        glEnd();
+    glPopMatrix();
+
     table();
 }
 
@@ -364,6 +416,10 @@ int main(int argc, char** argv)
     glutSpecialFunc(Perspec_change);
     glutKeyboardFunc(lightoff);
     glClearColor(0,0,0,1);
+    //glutMainLoop();
+    texture=LoadTexture("./textures/texture.raw",256, 256);
+    texture1=LoadTexture("./textures/texture2.raw",256, 256);
+
     glutMainLoop();
     return 0;
 }
