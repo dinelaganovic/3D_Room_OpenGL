@@ -62,7 +62,7 @@ GLuint LoadTexture(const char* filename, int width, int height){
 
 
 void lamps() {
-GLfloat ram1[] = { 1,1,1,1 };
+    GLfloat ram1[] = { 1,1,1,1 };
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ram1);
     glPushMatrix();
 
